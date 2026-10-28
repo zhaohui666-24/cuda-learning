@@ -4,6 +4,10 @@ week01-cuda-basics/saxpy
 week01-cuda-basics/thread_info
 week01-cuda-basics/matrix_add
 week01-cuda-basics/const_transform
+week02-cuda-basics/shared_reverse
+week02-cuda-basics/timed_vectoradd
+week02-cuda-basics/matmul_naive
+week02-cuda-basics/matmul_bench
 
 # General build artifacts
 *.o
