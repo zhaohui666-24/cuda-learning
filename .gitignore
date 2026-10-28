@@ -1,0 +1,19 @@
+# CUDA compiled binaries (same name as .cu, no extension on Linux/WSL)
+week01-cuda-basics/vectorAdd
+week01-cuda-basics/saxpy
+week01-cuda-basics/thread_info
+week01-cuda-basics/matrix_add
+week01-cuda-basics/const_transform
+
+# General build artifacts
+*.o
+*.obj
+*.out
+*.exe
+*.exp
+*.lib
+a.out
+
+# OS / editor
+.DS_Store
+Thumbs.db
