@@ -9,6 +9,7 @@ week02-cuda-basics/timed_vectoradd
 week02-cuda-basics/matmul_naive
 week02-cuda-basics/matmul_bench
 week02-cuda-basics/matmul_tiled_1d
+week02-cuda-basics/matmul_tiled_2d
 
 # General build artifacts
 *.o
