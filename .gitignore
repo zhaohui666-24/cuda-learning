@@ -10,6 +10,8 @@ week02-cuda-basics/matmul_naive
 week02-cuda-basics/matmul_bench
 week02-cuda-basics/matmul_tiled_1d
 week02-cuda-basics/matmul_tiled_2d
+week02-cuda-basics/padding_conflict
+week02-cuda-basics/padding_noconflict
 
 # General build artifacts
 *.o
