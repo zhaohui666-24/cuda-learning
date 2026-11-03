@@ -13,6 +13,19 @@ week02-cuda-basics/matmul_tiled_2d
 week02-cuda-basics/padding_conflict
 week02-cuda-basics/padding_noconflict
 
+# Week04 compiled binaries
+week04/reduction
+week04/reduction_2
+week04/reduction_compare
+week04/reduction_synctest
+week04/reduction_opwrap
+week04/reduction_shuffle
+week04/prefix_scan
+week04/Brent-Kung
+week04/scan_benchmark
+week04/stream
+week04/eng_query
+
 # General build artifacts
 *.o
 *.obj

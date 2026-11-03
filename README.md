@@ -15,6 +15,7 @@
 ```
 week01-cuda-basics/   # CUDA 基础与线程模型
 week02-cuda-basics/   # 内存层次、shared memory、GEMM（含 W03 tiling 与 bank conflict）
+week04/               # 并行原语（reduction/scan）、streams 异步与 Nsight
 gemm-benchmark.html   # W03 GEMM 三版本性能对比复盘
 ```
 
@@ -89,6 +90,47 @@ gemm-benchmark.html   # W03 GEMM 三版本性能对比复盘
 - ncu 指标：`l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum`（写）/ `_ld.sum`（读）。
 
 详见 `gemm-benchmark.html`。
+
+## 第四周：并行原语、Streams 异步与 Nsight
+
+**Reduction 归约系列：**
+
+| 程序 | 主题 | 核心知识点 |
+|---|---|---|
+| `reduction.cu` | 朴素树形归约 | shared + `__syncthreads`、log₂N 轮、N−1 次加法 |
+| `reduction_2.cu` | 连续线程优化 | `if(tid<s)`、完整 warp、去掉取模 |
+| `reduction_compare.cu` | warp 段同步对比 | `__syncwarp` vs `volatile`、独立线程调度 |
+| `reduction_synctest.cu` | block 屏障替代 | 用 `__syncthreads` 涵盖 warp 同步（更重） |
+| `reduction_opwrap.cu` | 算子封装 | 泛化归约 |
+| `reduction_shuffle.cu` | warp shuffle | 寄存器直连、无 shared、单 warp |
+
+**Prefix scan 系列：**
+
+| 程序 | 主题 | 核心知识点 |
+|---|---|---|
+| `prefix_scan.cu` | Hillis-Steele inclusive | 双同步、全员活跃 |
+| `prefix_ex.cu` | exclusive 右移版 | 初始化右移、补 0 |
+| `Brent-Kung.cu` | work-efficient scan | up/down-sweep、2n 工作 |
+| `scan_benchmark.cu` | 两算法计时对比 | event、多规模（kernel 用 BLOCK 而非 n） |
+
+**Streams 与工具：**
+
+| 程序 | 主题 | 核心知识点 |
+|---|---|---|
+| `stream.cu` | 多流 SAXPY | pinned + `cudaMemcpyAsync`、重叠 |
+| `eng_query.cu` | 设备属性查询 | `asyncEngineCount`、`cudaDeviceProp` |
+
+**核心概念与实测：**
+
+- **关键踩坑**：Volta 起独立线程调度，warp 不再严格锁步，裸手动展开会错，需 `__syncwarp` + `volatile` 防寄存器缓存；
+- **warp shuffle**：`__shfl_down_sync(mask,val,delta)`，同 warp lane 直接交换寄存器，`lane=tid&31`、`warpId=tid>>5`，无 bank conflict、延迟最低，跨 warp 不可用；
+- **scan**：inclusive 含自己（末值=总和），exclusive 不含（y[0]=0）；
+- **work/span（256 元素）**：Hillis-Steele W=1793/D=8，Brent-Kung W=510/D=16；GPU 上线程充足、span 主导，HS 实测反而更快；
+- **pinned memory**：`cudaMallocHost` 锁页、物理地址固定，GPU 可直接 DMA；普通 malloc 可分页，驱动先 CPU 拷到 staging 再 DMA，无法真异步；
+- **streams**：同 stream 严格 FIFO 保序，不同 stream 可并发；kernel 启动本身异步；
+- **本机实测**：`asyncEngineCount=1`，WSL2 GPU-PV 下多流无真物理重叠，1.85x 加速主要来自消除同步 API 的调度空隙；
+- **工具分工**：event 计时、nsys 宏观时间线（排期/重叠/空隙）、ncu 单 kernel 微观（occupancy/带宽/瓶颈/stall）；
+- **SAXPY 为 memory-bound**：DRAM 91.42% vs Compute 13.29%，warp 89.8% 周期在等内存，优化重点在访存而非计算。
 
 ## 编译运行
 
